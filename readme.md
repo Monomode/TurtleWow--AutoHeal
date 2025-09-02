@@ -1,4 +1,4 @@
-AutoMana 2.1
+AutoHeal 1.0
 ===
 An addon to manage your mana consuming in Turtle WoW.  
 ---
