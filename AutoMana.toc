@@ -2,7 +2,7 @@
 ## Title: AutoHeal |cff7fff7f TurtleWOW|r
 ## Notes: Automatic Heal & Mana Consume Usage
 ## X-Category: Interface Enhancements
-## Version: 2.1.1
+## Version: 1.0
 ## SavedVariablesPerCharacter: AutoHealSettings
 
 AutoHeal.lua
