@@ -1,10 +1,85 @@
--- Name: AutoMana
+-- Name: AutoHeal
 -- License: LGPL v2.1
+
+-- ========================================================================
+-- User-configurable thresholds (easy to edit)
+-- ========================================================================
+-- These control when AutoHeal decides to use consumables.
+-- Example: If your health drops below HEALTH_THRESHOLD, a healing potion is used.
+-- Example: If your mana drops below MANA_THRESHOLD, a mana potion is used.
+
+HEALTH_THRESHOLD = 69   -- absolute health value (e.g., 1000 HP)
+--HEALTH_PERCENT   = 0.25   -- % of max HP (0.25 = 25%)
+MANA_THRESHOLD   = 40    -- absolute mana value (e.g., 520 mana)
+--MANA_PERCENT     = 0.30   -- % of max mana (0.30 = 30%)
+
+-- User Options
+local defaults =
+{
+	enabled = true,
+	combat_only = false,
+	min_group_size = 1,
+  
+	use_majorheal = false,   -- major healing potion 
+	use_heal = false,         -- healing potion 
+	use_lesserheal = false,  -- lesser healing potion 
+	use_minorheal = true,   -- minor healing potion 
+	
+	use_majormana = false,   -- major mana potion 
+	use_mana = false,         -- mana potion
+	use_agate = true,        -- Mana Agate
+	use_lessermana = false,  -- lesser mana potion
+	use_minormana = true,   -- minor mana potion
+
+	use_majorrejuv = false,  -- major rejuvenation potion 
+	use_rejuv = false,        -- rejuvenation potion 
+	use_lesserrejuv = false, -- lesser rejuvenation potion 
+	use_minorrejuv = false,  -- minor rejuvenation potion 
+
+	use_tea = false, 		  -- Tea with sugar
+	use_healthstone = true,   -- Healthstone
+	use_wisdom = false,       -- Flask of distilled wisdom
+}
+
 
 local DEBUG_MODE = false
 
 local success = true
 local failure = nil
+
+local msglog = CreateFrame("Frame")
+msglog:RegisterEvent("PLAYER_ENTERING_WORLD")
+
+local function OnPlayerEnteringWorld(self, event)
+--   local seg1 = "|cffffffff ---- Refonte de l'addon ---- "
+  local seg2 = "|cffffffff <"
+  local seg3 = "|cffffffff Auto"
+  local seg4 = "|cffff0000 Heal" -- cffffff00 yellow
+  local seg5 = "|cffffffff and"
+  local seg6 = "|cff0070DD Mana"
+  local seg7 = "|cffffffff >"
+  local seg8 = ""
+  local seg9 = "|cff00FF00 Loaded successfully!"
+  local seg10 = "|cffffff00 /autoheal for more info"
+
+
+  -- Combine the segments and display the message
+  -- DEFAULT_CHAT_FRAME:AddMessage(seg1)
+  DEFAULT_CHAT_FRAME:AddMessage(seg8)
+  DEFAULT_CHAT_FRAME:AddMessage(seg2 .. seg3 .. seg4 .. seg5 .. seg6 .. seg7 .. seg8 .. seg9..seg10)
+  DEFAULT_CHAT_FRAME:AddMessage(seg8)
+  
+  InitMinimapButton()
+  DisplayDungeonsByColor()
+  ShowDungeonUI()
+  msglog:UnregisterEvent("PLAYER_ENTERING_WORLD")
+end
+
+msglog:SetScript("OnEvent", OnPlayerEnteringWorld)
+
+---------------------------------------------------------------------------------
+--                           Init                             --
+---------------------------------------------------------------------------------
 
 local amcolor = {
   blue = format("|c%02X%02X%02X%02X", 1, 41,146,255),
@@ -39,19 +114,6 @@ end
 -- Did an oom event fire
 local oom = false
 
--- User Options
-local defaults =
-{
-  enabled = true,
-  combat_only = true,
-  min_group_size = 10,
-  use_tea = true,
-  use_potion = false,
-  use_rejuv = false,
-  use_flask = false,
-  use_healthstone = true,
-  use_mana = true,
-}
 
 local consumables = {}
 
@@ -194,63 +256,121 @@ function consumeReady(which)
 end
 
 local last_fired = 0
-function AutoMana(macro_body,fn)
+function AutoHeal(macro_body,fn)
   local fn = fn or RunBody
   local p = "player"
   local now = GetTime()
   local gcd_done = now > last_fired + 1.5 -- delay after item use before using another one or client gets unhappy, even if items have no gcd
   -- local gcd_done = true
 
-  if AutoManaSettings.enabled and gcd_done
-    and (UnitAffectingCombat(p) or not AutoManaSettings.combat_only)
-    and (max(1,max(GetNumRaidMembers(),GetNumPartyMembers())) >= AutoManaSettings.min_group_size) then
+  if AutoHealSettings.enabled and gcd_done
+    and (UnitAffectingCombat(p) or not AutoHealSettings.combat_only)
+    and (max(1,max(GetNumRaidMembers(),GetNumPartyMembers())) >= AutoHealSettings.min_group_size) then
 
     local hp = UnitHealth(p)
     local hp_max = UnitHealthMax(p)
-    local missing_mana = abs (UnitMana(p) - UnitManaMax(p))
+	local mana = UnitMana(p)
+    local mana_max = UnitManaMax(p)
+    local missing_mana = abs (mana - mana_max)
     local missing_health = abs (hp - hp_max)
     local health_perc = hp / hp_max
+	local mana_perc = hp / hp_max
     local healthstone_threshold = (hp_max <= 5000 and health_perc < 0.5) or health_perc < 0.3
-	local healing_threshold = (hp_max <= 5000 and health_perc < 0.5) or health_perc < 0.3
-
-    if AutoManaSettings.use_tea and (missing_mana > 1350) and consumeReady(consumables.tea) then
-      debug_print("Trying Tea")
-      UseContainerItem(consumables.tea.bag,consumables.tea.slot)
-      oom = false
-      last_fired = now
-    elseif AutoManaSettings.use_rejuv and (missing_health > (consumables.has_alchstone and 2340 or 1760)) and consumeReady(consumables.rejuv) then
-      debug_print("Trying Rejuv")
-      UseContainerItem(consumables.rejuv.bag,consumables.rejuv.slot)
-      oom = false
-      last_fired = now
-    elseif AutoManaSettings.use_healthstone and healthstone_threshold and consumeReady(consumables.healthstone) then
-      debug_print("Trying Healthstone")
-      UseContainerItem(consumables.healthstone.bag,consumables.healthstone.slot)
-      last_fired = now
-    elseif AutoManaSettings.use_potion and (missing_mana > (consumables.has_alchstone and 2992 or 2250)) and consumeReady(consumables.potion) then
-      debug_print("Trying Potion")
-      UseContainerItem(consumables.potion.bag,consumables.potion.slot)
-      oom = false
-      last_fired = now
-    elseif AutoManaSettings.use_flask and oom and consumeReady(consumables.flask) then
-      debug_print("Trying Flask")
-      UseContainerItem(consumables.flask.bag,consumables.flask.slot)
-      oom = false
-      last_fired = now
-	elseif AutoManaSettings.use_mana and (missing_mana > 1600) and consumeReady(consumables.mana) then
-      debug_print("Trying Conjured Mana Agate")
-      UseContainerItem(consumables.mana.bag,consumables.mana.slot)
-      oom = false
-      last_fired = now
-	 elseif AutoManaSettings.use_heal and (missing_health > 750) and consumeReady(consumables.heal) then
-      debug_print("Trying Minor Healing Potion")
+	local healing_threshold = (hp <= HEALTH_THRESHOLD) or (health_perc < HEALTH_PERCENT)
+	local mana_threshold    = (mana <= MANA_THRESHOLD) or ((mana / mana_max) < MANA_PERCENT)
+	
+    if AutoHealSettings.use_majorheal and healing_threshold and consumeReady(consumables.majorheal) then
+      debug_print("Trying Major Healing Potion")
+      UseContainerItem(consumables.majorheal.bag,consumables.majorheal.slot)
+		DEFAULT_CHAT_FRAME:AddMessage(">> Using Major Healing Potion <<")
+		last_fired = now
+    elseif AutoHealSettings.use_heal and healing_threshold and consumeReady(consumables.heal) then
+      debug_print("Trying Healing Potion")
       UseContainerItem(consumables.heal.bag,consumables.heal.slot)
-      last_fired = now	  
-	 elseif AutoManaSettings.use_minormana and (missing_mana > 2000) and consumeReady(consumables.minormana) then
+		DEFAULT_CHAT_FRAME:AddMessage(">> Using Healing Potion <<")
+		last_fired = now
+    elseif AutoHealSettings.use_lesserheal and healing_threshold and consumeReady(consumables.lesserheal) then
+      debug_print("Trying Lesser Healing Potion")
+      UseContainerItem(consumables.lesserheal.bag,consumables.lesserheal.slot)
+		DEFAULT_CHAT_FRAME:AddMessage(">> Using Lesser Healing Potion <<")
+		last_fired = now
+    elseif AutoHealSettings.use_minorheal and healing_threshold and consumeReady(consumables.minorheal) then
+      debug_print("Trying Minor Healing Potion")
+      UseContainerItem(consumables.minorheal.bag,consumables.minorheal.slot)
+		DEFAULT_CHAT_FRAME:AddMessage(">> Using Minor Healing Potion <<")
+		last_fired = now
+	elseif AutoHealSettings.use_majormana and mana_threshold and consumeReady(consumables.majormana) then
+      debug_print("Trying Major Mana Potion")
+      UseContainerItem(consumables.majormana.bag,consumables.majormana.slot)
+		DEFAULT_CHAT_FRAME:AddMessage(">> Using Major Mana Potion <<")
+		oom = false
+		last_fired = now
+    elseif AutoHealSettings.use_mana and mana_threshold and consumeReady(consumables.mana) then
+      debug_print("Trying Mana Potion")
+      UseContainerItem(consumables.mana.bag,consumables.mana.slot)
+		DEFAULT_CHAT_FRAME:AddMessage(">> Using Mana Potion <<")
+		oom = false
+		last_fired = now
+    elseif AutoHealSettings.use_agate and mana_threshold and consumeReady(consumables.agate) then
+      debug_print("Trying Mana Agate")
+      UseContainerItem(consumables.agate.bag,consumables.healthstone.agate)
+		DEFAULT_CHAT_FRAME:AddMessage(">> Using Mana Agate <<")
+		oom = false
+		last_fired = now
+    elseif AutoHealSettings.use_lessermana and mana_threshold and consumeReady(consumables.lessermana) then
+      debug_print("Trying Lesser Mana Potion")
+      UseContainerItem(consumables.lessermana.bag,consumables.lessermana.slot)
+		DEFAULT_CHAT_FRAME:AddMessage(">> Using Lesser Mana Potion <<")
+		oom = false
+		last_fired = now
+    elseif AutoHealSettings.use_minormana and mana_threshold and consumeReady(consumables.minormana) then
       debug_print("Trying Minor Mana Potion")
       UseContainerItem(consumables.minormana.bag,consumables.minormana.slot)
-      oom = false
-      last_fired = now
+		DEFAULT_CHAT_FRAME:AddMessage(">> Using Minor Mana Potion <<")
+		oom = false
+		last_fired = now	  
+    elseif AutoHealSettings.use_majorrejuv and (missing_health > (consumables.has_alchstone and 2340 or 1760)) and consumeReady(consumables.majorrejuv) then
+      debug_print("Trying Major Rejuvenation")
+      UseContainerItem(consumables.majorrejuv.bag,consumables.majorrejuv.slot)
+		DEFAULT_CHAT_FRAME:AddMessage(">> Using Major Rejuvenation Potion <<")
+		oom = false
+		last_fired = now
+    elseif AutoHealSettings.use_rejuv and (missing_health > (consumables.has_alchstone and 2340 or 1760)) and consumeReady(consumables.rejuv) then
+      debug_print("Trying Rejuvenation")
+      UseContainerItem(consumables.rejuv.bag,consumables.rejuv.slot)
+		DEFAULT_CHAT_FRAME:AddMessage(">> Using Rejuvenation Potion <<")
+		oom = false
+		last_fired = now
+    elseif AutoHealSettings.use_lesserrejuv and (missing_health > (consumables.has_alchstone and 2340 or 1760)) and consumeReady(consumables.lesserrejuv) then
+      debug_print("Trying Lesser Rejuvenation")
+      UseContainerItem(consumables.lesserrejuv.bag,consumables.lesserrejuv.slot)
+		DEFAULT_CHAT_FRAME:AddMessage(">> Using Lesser Rejuvenation Potion <<")
+		oom = false
+		last_fired = now
+    elseif AutoHealSettings.use_minorrejuv and (missing_health > (consumables.has_alchstone and 2340 or 1760)) and consumeReady(consumables.minorrejuv) then
+      debug_print("Trying Minor Rejuvenation")
+      UseContainerItem(consumables.minorrejuv.bag,consumables.minorrejuv.slot)
+		DEFAULT_CHAT_FRAME:AddMessage(">> Using Minor Rejuvenation Potion <<")
+		oom = false
+		last_fired = now
+		
+    elseif AutoHealSettings.use_tea and mana_threshold and consumeReady(consumables.tea) then
+      debug_print("Trying Tea with sugar")
+      UseContainerItem(consumables.agate.bag,consumables.healthstone.agate)
+		DEFAULT_CHAT_FRAME:AddMessage(">> Using Tea with sugar <<")
+		oom = false
+		last_fired = now
+    elseif AutoHealSettings.use_healthstone and healthstone_threshold and consumeReady(consumables.healthstone) then
+      debug_print("Trying Healthstone")
+      UseContainerItem(consumables.healthstone.bag,consumables.healthstone.slot)
+		DEFAULT_CHAT_FRAME:AddMessage(">> Using Healthstone <<")
+		last_fired = now
+    elseif AutoHealSettings.use_wisdom and mana_threshold and consumeReady(consumables.flask) then
+      debug_print("Trying Flask")
+      UseContainerItem(consumables.flask.bag,consumables.healthstone.flask)
+		DEFAULT_CHAT_FRAME:AddMessage(">> Using Flask of Distilled Wisdom <<")
+		oom = false
+		last_fired = now
     else
       debug_print("Running body")
       fn(macro_body)
@@ -262,22 +382,22 @@ end
 
 -------------------------------------------------
 
-local AutoManaFrame = CreateFrame("FRAME")
+local AutoHealFrame = CreateFrame("FRAME")
 
 function AM_CastSpellByName(spell,a2,a3,a4,a5,a6,a7,a8,a9,a10)
-  AutoMana(spell,function () AutoManaFrame.orig_CastSpellByName(spell,a2,a3,a4,a5,a6,a7,a8,a9,a10) end)
+  AutoHeal(spell,function () AutoHealFrame.orig_CastSpellByName(spell,a2,a3,a4,a5,a6,a7,a8,a9,a10) end)
 end
 
 function AM_CastSpell(spell,a2,a3,a4,a5,a6,a7,a8,a9,a10)
-  AutoMana(spell,function () AutoManaFrame.orig_CastSpell(spell,a2,a3,a4,a5,a6,a7,a8,a9,a10) end)
+  AutoHeal(spell,function () AutoHealFrame.orig_CastSpell(spell,a2,a3,a4,a5,a6,a7,a8,a9,a10) end)
 end
 
 -- action bar buttons are spells too
 function AM_UseAction(slot,a2,a3,a4,a5,a6,a7,a8,a9,a10)
-  if AutoManaFrame.cachedSpells[GetActionTexture(slot)] then
-    AutoMana(slot,function () AutoManaFrame.orig_UseAction(slot,a2,a3,a4,a5,a6,a7,a8,a9,a10) end)
+  if AutoHealFrame.cachedSpells[GetActionTexture(slot)] then
+    AutoHeal(slot,function () AutoHealFrame.orig_UseAction(slot,a2,a3,a4,a5,a6,a7,a8,a9,a10) end)
   else
-    AutoManaFrame.orig_UseAction(slot,a2,a3,a4,a5,a6,a7,a8,a9,a10)
+    AutoHealFrame.orig_UseAction(slot,a2,a3,a4,a5,a6,a7,a8,a9,a10)
   end
 end
 
@@ -291,9 +411,9 @@ local function HookCasts(unhook)
     CastSpellByName = orig_CastSpellByName
     UseAction = orig_UseAction
   else
-    AutoManaFrame.orig_CastSpell = orig_CastSpell
-    AutoManaFrame.orig_CastSpellByName = orig_CastSpellByName
-    AutoManaFrame.orig_UseAction = orig_UseAction
+    AutoHealFrame.orig_CastSpell = orig_CastSpell
+    AutoHealFrame.orig_CastSpellByName = orig_CastSpellByName
+    AutoHealFrame.orig_UseAction = orig_UseAction
     CastSpell = AM_CastSpell
     CastSpellByName = AM_CastSpellByName
     UseAction = AM_UseAction
@@ -303,16 +423,16 @@ HookCasts() -- hook right now in case another addon does further hooks
 
 local function OnEvent()
   if event == "UI_ERROR_MESSAGE" and arg1 == "Not enough mana" then
-    if AutoManaSettings.use_flask then oom = true end
+    if AutoHealSettings.use_wisdom then oom = true end
   elseif event == "ADDON_LOADED" then
-    if not AutoManaSettings
-      then AutoManaSettings = defaults -- initialize default settings
+    if not AutoHealSettings
+      then AutoHealSettings = defaults -- initialize default settings
       else -- or check that we only have the current settings format
         local s = {}
         for k,v in pairs(defaults) do
-          s[k] = (AutoManaSettings[k] == nil) and defaults[k] or AutoManaSettings[k]
+          s[k] = (AutoHealSettings[k] == nil) and defaults[k] or AutoHealSettings[k]
         end
-        AutoManaSettings = s
+        AutoHealSettings = s
     end
   elseif event == "UNIT_INVENTORY_CHANGED" and arg1 == "player" then -- alch stone
     consumables.has_alchstone = hasAlchStone()
@@ -320,24 +440,52 @@ local function OnEvent()
     -- this should only actually search for the missing item
     consumables.tea = AMFindItem(consumables.tea, "61675", arg1)
     if not consumables.tea then
-      consumables.tea = AMFindItem(consumables.tea, "15723", arg1)
+      consumables.tea = AMFindItem(consumables.tea, "Tea with sugar", arg1)
     end
-    consumables.potion = AMFindItem(consumables.potion, "13444", arg1)
-    consumables.rejuv = AMFindItem(consumables.rejuv, "18253", arg1)
-    consumables.healthstone = AMFindItem(consumables.healthstone, "Healthstone", arg1)
-    consumables.flask = AMFindItem(consumables.flask, "13511", arg1)
-	consumables.mana = AMFindItem(consumables.mana, "5514", arg1) -- conjured mana agate
-	consumables.heal = AMFindItem(consumables.heal, "118", arg1)
-	consumables.minormana = AMFindItem(consumables.mana, "2455", arg1)
+	-- major heal
+	consumables.majorheal = AMFindItem(consumables.majorheal, "Major Healing Potion", arg1)
+	-- heal
+	consumables.heal = AMFindItem(consumables.heal, "Healing Potion", arg1)
+	-- lesser heal
+	consumables.lesserheal = AMFindItem(consumables.lesserheal, "Lesser Healing Potion", arg1)
+	-- minor heal
+	consumables.minorheal = AMFindItem(consumables.minorheal, "Minor Healing Potion", arg1)
+	
+	-- major mana
+	consumables.majormana = AMFindItem(consumables.majormana, "Major Mana Potion", arg1)
+	-- mana
+	consumables.mana = AMFindItem(consumables.mana, "Mana Potion", arg1)
+	-- mana agate
+	consumables.agate = AMFindItem(consumables.agate, "Mana Agate", arg1) -- conjured mana agate
+	-- lesser mana
+	consumables.lessermana = AMFindItem(consumables.lessermana, "Lesser Mana Potion", arg1)
+	-- minor mana
+	consumables.minormana = AMFindItem(consumables.minormana, "Minor Mana Potion", arg1)
+	
+	-- major rejuv
+	consumables.majorrejuv = AMFindItem(consumables.majorrejuv, "Major Rejuvenation Potion", arg1)
+	-- rejuv
+	consumables.rejuv = AMFindItem(consumables.rejuv, "Rejuvenation Potion", arg1)
+	-- lesser rejuv
+	consumables.lesserrejuv = AMFindItem(consumables.lesserrejuv, "Lesser Rejuvenation Potion", arg1)
+	-- minor rejuv
+	consumables.minorrejuv = AMFindItem(consumables.minorrejuv, "Minor Rejuvenation Potion", arg1)
+	
+	-- healthstone
+	consumables.healthstone = AMFindItem(consumables.healthstone, "Healthstone", arg1)
+	-- flask
+	consumables.flask = AMFindItem(consumables.flask, "Flask of Distilled Wisdom", arg1)
+	-- tea with sugar
+	consumables.tea = AMFindItem(consumables.tea, "Tea with sugar", arg1)
   elseif event == "PLAYER_ENTERING_WORLD" then -- spell cache
-    AutoManaFrame.cachedSpells = {}
+    AutoHealFrame.cachedSpells = {}
     -- Loop through the spellbook and cache player spells
     local function CacheSpellTextures(bookType)
       local i = 1
       while true do
         local spellTexture = GetSpellTexture(i, bookType)
         if not spellTexture then break end
-        AutoManaFrame.cachedSpells[spellTexture] = true
+        AutoHealFrame.cachedSpells[spellTexture] = true
         i = i + 1
       end
   end
@@ -350,66 +498,111 @@ end
 local function handleCommands(msg,editbox)
   local args = {};
   for word in string.gfind(msg,'%S+') do table.insert(args,word) end
-  if args[1] == "tea" then
-    AutoManaSettings.use_tea = not AutoManaSettings.use_tea
-    amprint("Use Tea: "..showOnOff(AutoManaSettings.use_tea))
-  elseif args[1] == "pot" or args[1] == "potion" then
-    AutoManaSettings.use_potion = not AutoManaSettings.use_potion
-    amprint("Use Major Mana Potion: "..showOnOff(AutoManaSettings.use_potion))
-  elseif args[1] == "rejuv" or args[1] == "rejuvenation" then
-    AutoManaSettings.use_rejuv = not AutoManaSettings.use_rejuv
-    amprint("Use Major Rejuvenation Potion: "..showOnOff(AutoManaSettings.use_rejuv))
-  elseif args[1] == "stone" or args[1] == "healthstone" then
-    AutoManaSettings.use_healthstone = not AutoManaSettings.use_healthstone
-    amprint("Use Healthstone: "..showOnOff(AutoManaSettings.use_healthstone))
-  elseif args[1] == "flask" then
-    AutoManaSettings.use_flask = not AutoManaSettings.use_flask
-    amprint("Use Flask of Distilled Wisdom: "..showOnOff(AutoManaSettings.use_flask))
-  elseif args[1] == "Conjured Mana Agate" then
-    AutoManaSettings.use_mana = not AutoManaSettings.use_mana
-    amprint("Use Conjured Mana Agate: "..showOnOff(AutoManaSettings.use_mana))
-  elseif args[1] == "Minor Healing Potion" then
-    AutoManaSettings.use_heal = not AutoManaSettings.use_heal
-    amprint("Use Minor Healing Potion: "..showOnOff(AutoManaSettings.use_heal))
-  elseif args[1] == "Minor Mana Potion" then
-    AutoManaSettings.use_minormana = not AutoManaSettings.use_minormana
-    amprint("Use Minor Mana Potion: "..showOnOff(AutoManaSettings.use_minormana))
+-- Healing Potions
+if args[1] == "Major Healing Potion" then
+    AutoHealSettings.use_majorheal = not AutoHealSettings.use_majorheal
+    amprint("Use Healing Potion: " .. showOnOff(AutoHealSettings.use_majorheal))
+elseif args[1] == "Healing Potion" then
+    AutoHealSettings.use_heal = not AutoHealSettings.use_heal
+    amprint("Use Healing Potion: " .. showOnOff(AutoHealSettings.use_heal))
+elseif args[1] == "Lesser Healing Potion" then
+    AutoHealSettings.use_lesserheal = not AutoHealSettings.use_lesserheal
+    amprint("Use Lesser Healing Potion: " .. showOnOff(AutoHealSettings.use_lesserheal))
+elseif args[1] == "Minor Healing Potion" then
+    AutoHealSettings.use_minorheal = not AutoHealSettings.use_minorheal
+    amprint("Use Minor Healing Potion: " .. showOnOff(AutoHealSettings.use_minorheal))
+-- Mana Potions
+elseif args[1] == "Major Mana Potion" then
+    AutoHealSettings.use_majormana = not AutoHealSettings.use_majormana
+    amprint("Use Major Mana Potion: " .. showOnOff(AutoHealSettings.use_majormana))
+elseif args[1] == "Mana Potion" then
+    AutoHealSettings.use_mana = not AutoHealSettings.use_mana
+    amprint("Use Mana Potion: " .. showOnOff(AutoHealSettings.use_mana))
+elseif args[1] == "Lesser Mana Potion" then
+    AutoHealSettings.use_lessermana = not AutoHealSettings.use_lessermana
+    amprint("Use Lesser Mana Potion: " .. showOnOff(AutoHealSettings.use_lessermana))
+elseif args[1] == "Minor Mana Potion" then
+    AutoHealSettings.use_minormana = not AutoHealSettings.use_minormana
+    amprint("Use Minor Mana Potion: " .. showOnOff(AutoHealSettings.use_minormana))
+-- Rejuvenation Potions
+elseif args[1] == "Major Rejuvenation Potion" then
+    AutoHealSettings.use_rejuv = not AutoHealSettings.use_rejuv
+    amprint("Use Major Rejuvenation Potion: " .. showOnOff(AutoHealSettings.use_majorrejuv))
+elseif args[1] == "Rejuvenation Potion" then
+    AutoHealSettings.use_rejuv = not AutoHealSettings.use_rejuv
+    amprint("Use Rejuvenation Potion: " .. showOnOff(AutoHealSettings.use_rejuv))
+elseif args[1] == "Lesser Rejuvenation Potion" then
+    AutoHealSettings.use_lesserrejuv = not AutoHealSettings.use_lesserrejuv
+    amprint("Use Lesser Rejuvenation Potion: " .. showOnOff(AutoHealSettings.use_lesserrejuv))
+elseif args[1] == "Minor Rejuvenation Potion" then
+    AutoHealSettings.use_minorrejuv = not AutoHealSettings.use_minorrejuv
+    amprint("Use Minor Rejuvenation Potion: " .. showOnOff(AutoHealSettings.use_minorrejuv))
+-- Special options
+elseif args[1] == "tea" then
+    AutoHealSettings.use_tea = not AutoHealSettings.use_tea
+    amprint("Use Tea: " .. showOnOff(AutoHealSettings.use_tea))
+elseif args[1] == "stone" or args[1] == "healthstone" then
+    AutoHealSettings.use_healthstone = not AutoHealSettings.use_healthstone
+    amprint("Use Healthstone: " .. showOnOff(AutoHealSettings.use_healthstone))
+elseif args[1] == "flask" then
+    AutoHealSettings.use_wisdom = not AutoHealSettings.use_wisdom
+    amprint("Use Flask of Distilled Wisdom: " .. showOnOff(AutoHealSettings.use_wisdom))
+elseif args[1] == "Conjured Mana Agate" then
+    AutoHealSettings.use_mana_agate = not AutoHealSettings.use_mana_agate
+    amprint("Use Conjured Mana Agate: " .. showOnOff(AutoHealSettings.use_mana_agate))
+
   elseif args[1] == "size" or args[1] == "group" then
     local n = tonumber(args[2])
     if n and n >= 0 then
-      AutoManaSettings.min_group_size = n
+      AutoHealSettings.min_group_size = n
       amprint("Active at minimum group size: "..n)
     else
-      amprint("Usage: /automana size <non-negative number>")
+      amprint("Usage: /AutoHeal size <non-negative number>")
     end
   elseif args[1] == "combat" then
-    AutoManaSettings.combat_only = not AutoManaSettings.combat_only
-    amprint("Use only in combat: "..showOnOff(AutoManaSettings.combat_only))
+    AutoHealSettings.combat_only = not AutoHealSettings.combat_only
+    amprint("Use only in combat: "..showOnOff(AutoHealSettings.combat_only))
   elseif args[1] == "enabled" or args[1] == "enable" or args[1] == "toggle" then
-    AutoManaSettings.enabled = not AutoManaSettings.enabled
-    amprint("Addon enabled: "..showOnOff(AutoManaSettings.enabled))
-  else -- make group size color by if you're in a big enough group currently
-    amprint('AutoMana: Automatically use mana consumes.')
-    amprint('- Addon '..colorize("enable",amcolor.green)..'d [' .. showOnOff(AutoManaSettings.enabled) .. ']')
-    amprint('- Active in ' .. colorize("combat",amcolor.green)..' only [' .. showOnOff(AutoManaSettings.combat_only) .. ']')
-    amprint('- Active at minimum group ' .. colorize("size",amcolor.green) .. ' [' .. AutoManaSettings.min_group_size .. ']')
-    amprint('- Use ' .. colorize("tea",amcolor.green) .. ' [' .. showOnOff(AutoManaSettings.use_tea) .. ']')
-    amprint('- Use Major Mana '.. colorize("pot",amcolor.green) .. 'ion [' .. showOnOff(AutoManaSettings.use_potion) .. ']')
-    amprint('- Use Major ' .. colorize("rejuv",amcolor.green) .. 'enation Potion [' .. showOnOff(AutoManaSettings.use_rejuv) .. ']')
-    amprint('- Use Health' .. colorize("stone",amcolor.green) .. ' [' .. showOnOff(AutoManaSettings.use_healthstone) .. ']')
-    amprint('- Use ' ..colorize("flask",amcolor.green) ..' of Distilled Wisdom [' .. showOnOff(AutoManaSettings.use_flask) .. ']')
-	amprint('- Use Conjured ' ..colorize("mana",amcolor.green) ..' agate [' .. showOnOff(AutoManaSettings.use_mana) .. ']')
-	amprint('- Use Minor Healing Potion ' ..colorize("heal",amcolor.green) ..' potion minor [' .. showOnOff(AutoManaSettings.use_heal) .. ']')
-	amprint('- Use Minor Mana Potion ' ..colorize("minormana",amcolor.green) ..' potion [' .. showOnOff(AutoManaSettings.use_minormana) .. ']')
+    AutoHealSettings.enabled = not AutoHealSettings.enabled
+    amprint("Addon enabled: "..showOnOff(AutoHealSettings.enabled))
+  else -- todo make group size color by if you're in a big enough group currently
+    amprint('AutoHeal: Automatically use consumes.')
+    amprint('- Addon '..colorize("enable",amcolor.green)..'d [' .. showOnOff(AutoHealSettings.enabled) .. ']')
+    amprint('- Active in ' .. colorize("combat",amcolor.green)..' only [' .. showOnOff(AutoHealSettings.combat_only) .. ']')
+    amprint('- Active at minimum group ' .. colorize("size",amcolor.green) .. ' [' .. AutoHealSettings.min_group_size .. ']')
+
+-- Healing Potions
+	amprint('- Use ' .. colorize("MinorHeal", amcolor.green) .. 'ing Potion [' .. showOnOff(AutoHealSettings.use_minorheal) .. ']')
+	amprint('- Use ' .. colorize("LesserHeal", amcolor.green) .. 'ing Potion [' .. showOnOff(AutoHealSettings.use_lesserheal) .. ']')
+	amprint('- Use ' .. colorize("Heal", amcolor.green) .. 'ing Potion [' .. showOnOff(AutoHealSettings.use_heal) .. ']')
+	amprint('- Use ' .. colorize("MajorHeal",amcolor.green) .. 'ing Potion [' .. showOnOff(AutoHealSettings.use_majorheal) .. ']')
+
+-- Mana Potions
+	amprint('- Use ' .. colorize("MinorMana", amcolor.green) .. ' Potion [' .. showOnOff(AutoHealSettings.use_minormana) .. ']')
+	amprint('- Use ' .. colorize("LesserMana", amcolor.green) .. ' Potion [' .. showOnOff(AutoHealSettings.use_lessermana) .. ']')
+	amprint('- Use Conjured Mana ' .. colorize("Agate", amcolor.green) .. ' [' .. showOnOff(AutoHealSettings.use_mana_agate) .. ']')
+	amprint('- Use ' .. colorize("Mana", amcolor.green) .. ' Potion [' .. showOnOff(AutoHealSettings.use_mana) .. ']')
+	amprint('- Use ' .. colorize("MajorMana",amcolor.green) .. ' Potion [' .. showOnOff(AutoHealSettings.use_majormana) .. ']')
+
+-- Rejuvenation Potions
+	amprint('- Use ' .. colorize("MinorRejuv", amcolor.green) .. 'enation Potion [' .. showOnOff(AutoHealSettings.use_minorrejuv) .. ']')
+	amprint('- Use ' .. colorize("LesserRejuv", amcolor.green) .. 'enation Potion [' .. showOnOff(AutoHealSettings.use_lesserrejuv) .. ']')
+	amprint('- Use ' .. colorize("Rejuv", amcolor.green) .. 'enation Potion [' .. showOnOff(AutoHealSettings.use_rejuv) .. ']')
+	amprint('- Use ' .. colorize("MajorRejuv",amcolor.green) .. 'enation Potion [' .. showOnOff(AutoHealSettings.use_majorrejuv) .. ']')
+
+-- Specials
+	amprint('- Use ' .. colorize("Tea", amcolor.green) .. ' with sugar [' .. showOnOff(AutoHealSettings.use_tea) .. ']')
+	amprint('- Use Health' .. colorize("Stone", amcolor.green) .. ' [' .. showOnOff(AutoHealSettings.use_healthstone) .. ']')
+	amprint('- Use ' .. colorize("Flask", amcolor.green) .. ' of Distilled Wisdom [' .. showOnOff(AutoHealSettings.use_wisdom) .. ']')	
   end
 end
 
-AutoManaFrame:RegisterEvent("UI_ERROR_MESSAGE")
-AutoManaFrame:RegisterEvent("BAG_UPDATE")
-AutoManaFrame:RegisterEvent("UNIT_INVENTORY_CHANGED")
-AutoManaFrame:RegisterEvent("ADDON_LOADED")
-AutoManaFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
-AutoManaFrame:SetScript("OnEvent", OnEvent)
+AutoHealFrame:RegisterEvent("UI_ERROR_MESSAGE")
+AutoHealFrame:RegisterEvent("BAG_UPDATE")
+AutoHealFrame:RegisterEvent("UNIT_INVENTORY_CHANGED")
+AutoHealFrame:RegisterEvent("ADDON_LOADED")
+AutoHealFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+AutoHealFrame:SetScript("OnEvent", OnEvent)
   
-SLASH_AUTOMANA1 = "/automana";
-SlashCmdList["AUTOMANA"] = handleCommands
+SLASH_AUTOHEAL1 = "/autoheal";
+SlashCmdList["AUTOHEAL"] = handleCommands
