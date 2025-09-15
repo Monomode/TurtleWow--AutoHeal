@@ -281,9 +281,14 @@ function AutoHeal(macro_body,fn)
 	local mana_perc = mana / mana_max
 	-- local healing_threshold = (hp <= HEALTH_THRESHOLD)
 	-- local mana_threshold    = (mana <= MANA_THRESHOLD)
-	local healing_threshold = (health_perc < AutoHealSettings.health_percent)
-	local mana_threshold    = (mana_perc < AutoHealSettings.mana_percent)
-	local healthstone_threshold = (health_perc < AutoHealSettings.health_percent)
+	--local healing_threshold = (health_perc < AutoHealSettings.health_percent)
+	--local mana_threshold    = (mana_perc < AutoHealSettings.mana_percent)
+	--local healthstone_threshold = (health_perc < AutoHealSettings.health_percent)
+
+	local healing_threshold = (health_perc < AutoHealSettings.health_percent / 100)
+	local mana_threshold    = (mana_perc < AutoHealSettings.mana_percent / 100)
+	local healthstone_threshold = (health_perc < AutoHealSettings.health_percent / 100)
+
 
 	
     if AutoHealSettings.use_majorheal and healing_threshold and consumeReady(consumables.majorheal) and UnitAffectingCombat("player") then
@@ -582,20 +587,20 @@ elseif args[1] == "jade" then
 	
 elseif args[1] == "heal" and args[2] then
     local val = tonumber(args[2])
-    if val and val > 0 and val < 100 then
-        AutoHealSettings.health_percent = val / 100
+    if val and val > 0 and val <= 100 then
+        AutoHealSettings.health_percent = val
         amprint("Health threshold set to " .. val .. "%")
     else
-        amprint("Usage: /autoheal heal <percent>")
+        amprint("Usage: /autoheal heal <percent 1-100>")
     end
 
 elseif args[1] == "mana" and args[2] then
     local val = tonumber(args[2])
-    if val and val > 0 and val < 100 then
-        AutoHealSettings.mana_percent = val / 100
+    if val and val > 0 and val <= 100 then
+        AutoHealSettings.mana_percent = val
         amprint("Mana threshold set to " .. val .. "%")
     else
-        amprint("Usage: /autoheal mana <percent>")
+        amprint("Usage: /autoheal mana <percent 1-100>")
     end
 
 
@@ -643,7 +648,12 @@ elseif args[1] == "mana" and args[2] then
 -- Specials
 	amprint('- Use ' .. colorize("Tea", amcolor.green) .. ' with sugar [' .. showOnOff(AutoHealSettings.use_tea) .. ']')
 	amprint('- Use Health' .. colorize("Stone", amcolor.green) .. ' [' .. showOnOff(AutoHealSettings.use_healthstone) .. ']')
-	amprint('- Use ' .. colorize("Flask", amcolor.green) .. ' of Distilled Wisdom [' .. showOnOff(AutoHealSettings.use_wisdom) .. ']')	
+	amprint('- Use ' .. colorize("Flask", amcolor.green) .. ' of Distilled Wisdom [' .. showOnOff(AutoHealSettings.use_wisdom) .. ']')
+
+-- Health & Mana thresholds
+    amprint('- Health threshold: ' .. colorize("HP", amcolor.green) .. ' [' .. AutoHealSettings.health_percent .. '%]')
+    amprint('- Mana threshold: ' .. colorize("Mana", amcolor.green) .. ' [' .. AutoHealSettings.mana_percent .. '%]')
+
   end
 end
 
