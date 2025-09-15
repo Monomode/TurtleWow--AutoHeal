@@ -4,15 +4,13 @@
 -- ========================================================================
 -- User-configurable thresholds (easy to edit)
 -- ========================================================================
--- These control when AutoHeal decides to use consumables.
--- Example: If your health drops below HEALTH_THRESHOLD, a healing potion is used.
--- Example: If your mana drops below MANA_THRESHOLD, a mana potion is used.
-
-HEALTH_THRESHOLD = 69   -- absolute health value (e.g., 1000 HP)
-MANA_THRESHOLD   = 400    -- absolute mana value (e.g., 520 mana)
-
-HEALTH_PERCENT   = 0.25   -- % of max HP (0.25 = 25%)
-MANA_PERCENT     = 0.30   -- % of max mana (0.30 = 30%)
+-- Example: If your health drops below HEALTH_THRESHOLD_PERCENT, a healing potion is used.
+-- Example: If your mana drops below MANA_THRESHOLD_PERCENT, a mana potion is used.
+-- Example: HEALTH THRESHOLD = 69   -- absolute health value (e.g., 1000 HP)
+-- Example: MANA THRESHOLD   = 420    -- absolute mana value (e.g., 520 mana)
+-- Example: HEALTH PERCENT   = 0.15   -- % of max HP (0.25 = 25%)
+-- Example: MANA PERCENT     = 0.15   -- % of max mana (0.30 = 30%)
+--
 
 -- User Options
 local defaults =
@@ -41,6 +39,9 @@ local defaults =
 	use_tea = false, 		  -- Tea with sugar
 	use_healthstone = true,   -- Healthstone
 	use_wisdom = false,       -- Flask of distilled wisdom
+	
+	health_percent = 0.25, -- default 25% HP
+    mana_percent   = 0.15, -- default 15% Mana
 }
 
 
@@ -278,9 +279,12 @@ function AutoHeal(macro_body,fn)
     local missing_health = abs (hp - hp_max)
     local health_perc = hp / hp_max
 	local mana_perc = mana / mana_max
-    local healthstone_threshold = (hp_max <= 5000 and health_perc < 0.5) or health_perc < 0.3
-	local healing_threshold = (hp <= HEALTH_THRESHOLD) -- or (health_perc < HEALTH_PERCENT)
-	local mana_threshold    = (mana <= MANA_THRESHOLD) -- or ((mana / mana_max) < MANA_PERCENT)
+	-- local healing_threshold = (hp <= HEALTH_THRESHOLD)
+	-- local mana_threshold    = (mana <= MANA_THRESHOLD)
+	local healing_threshold = (health_perc < AutoHealSettings.health_percent)
+	local mana_threshold    = (mana_perc < AutoHealSettings.mana_percent)
+	local healthstone_threshold = (health_perc < AutoHealSettings.health_percent)
+
 	
     if AutoHealSettings.use_majorheal and healing_threshold and consumeReady(consumables.majorheal) and UnitAffectingCombat("player") then
       debug_print("Trying Major Healing Potion")
@@ -575,6 +579,25 @@ elseif args[1] == "agate" then
 elseif args[1] == "jade" then
     AutoHealSettings.use_jade = not AutoHealSettings.use_jade
     amprint("Use Conjured Mana Jade: " .. showOnOff(AutoHealSettings.use_jade))
+	
+elseif args[1] == "heal" and args[2] then
+    local val = tonumber(args[2])
+    if val and val > 0 and val < 100 then
+        AutoHealSettings.health_percent = val / 100
+        amprint("Health threshold set to " .. val .. "%")
+    else
+        amprint("Usage: /autoheal heal <percent>")
+    end
+
+elseif args[1] == "mana" and args[2] then
+    local val = tonumber(args[2])
+    if val and val > 0 and val < 100 then
+        AutoHealSettings.mana_percent = val / 100
+        amprint("Mana threshold set to " .. val .. "%")
+    else
+        amprint("Usage: /autoheal mana <percent>")
+    end
+
 
   elseif args[1] == "size" or args[1] == "group" then
     local n = tonumber(args[2])
@@ -584,6 +607,7 @@ elseif args[1] == "jade" then
     else
       amprint("Usage: /AutoHeal size <non-negative number>")
     end
+	
   elseif args[1] == "combat" then
     AutoHealSettings.combat_only = not AutoHealSettings.combat_only
     amprint("Use only in combat: "..showOnOff(AutoHealSettings.combat_only))
