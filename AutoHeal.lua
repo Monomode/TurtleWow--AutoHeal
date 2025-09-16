@@ -585,7 +585,7 @@ elseif args[1] == "jade" then
     AutoHealSettings.use_jade = not AutoHealSettings.use_jade
     amprint("Use Conjured Mana Jade: " .. showOnOff(AutoHealSettings.use_jade))
 	
-elseif args[1] == "heal" and args[2] then
+elseif args[1] == "hp" and args[2] then
     local val = tonumber(args[2])
     if val and val > 0 and val <= 100 then
         AutoHealSettings.health_percent = val
@@ -594,7 +594,7 @@ elseif args[1] == "heal" and args[2] then
         amprint("Usage: /autoheal heal <percent 1-100>")
     end
 
-elseif args[1] == "mana" and args[2] then
+elseif args[1] == "mp" and args[2] then
     local val = tonumber(args[2])
     if val and val > 0 and val <= 100 then
         AutoHealSettings.mana_percent = val
@@ -652,7 +652,7 @@ elseif args[1] == "mana" and args[2] then
 
 -- Health & Mana thresholds
     amprint('- Health threshold: ' .. colorize("HP", amcolor.green) .. ' [' .. AutoHealSettings.health_percent .. '%]')
-    amprint('- Mana threshold: ' .. colorize("Mana", amcolor.green) .. ' [' .. AutoHealSettings.mana_percent .. '%]')
+    amprint('- Mana threshold: ' .. colorize("MP", amcolor.green) .. ' [' .. AutoHealSettings.mana_percent .. '%]')
 
   end
 end
