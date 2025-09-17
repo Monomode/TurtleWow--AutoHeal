@@ -40,8 +40,8 @@ local defaults =
 	use_healthstone = true,   -- Healthstone
 	use_wisdom = false,       -- Flask of distilled wisdom
 	
-	health_percent = 0.25, -- default 25% HP
-    mana_percent   = 0.15, -- default 15% Mana
+	health_percent = 20, -- default % HP
+    mana_percent   = 20, -- default % Mana
 }
 
 
