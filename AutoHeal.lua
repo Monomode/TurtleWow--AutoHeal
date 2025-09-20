@@ -19,26 +19,27 @@ local defaults =
 	combat_only = false,
 	min_group_size = 1,
   
-	use_majorheal = false,   -- major healing potion 
+	use_majorheal = true,   -- major healing potion 
 	use_heal = false,         -- healing potion 
-	use_lesserheal = false,  -- lesser healing potion 
+	use_lesserheal = true,  -- lesser healing potion 
 	use_minorheal = true,   -- minor healing potion 
 	
-	use_majormana = false,   -- major mana potion
 	use_jade = true,        -- conjured mana jade
-	use_mana = false,         -- mana potion
 	use_agate = true,        -- conjured mana agate
-	use_lessermana = false,  -- lesser mana potion
+	use_majormana = true,   -- major mana potion
+	use_greatermana, true	-- greater mana potion
+	use_mana = true,         -- mana potion
+	use_lessermana = true,  -- lesser mana potion
 	use_minormana = true,   -- minor mana potion
 
-	use_majorrejuv = false,  -- major rejuvenation potion 
-	use_rejuv = false,        -- rejuvenation potion 
-	use_lesserrejuv = false, -- lesser rejuvenation potion 
-	use_minorrejuv = false,  -- minor rejuvenation potion 
+	use_majorrejuv = true,  -- major rejuvenation potion 
+	use_rejuv = true,        -- rejuvenation potion 
+	use_lesserrejuv = true, -- lesser rejuvenation potion 
+	use_minorrejuv = true,  -- minor rejuvenation potion 
 
-	use_tea = false, 		  -- Tea with sugar
+	use_tea = true, 		  -- Tea with sugar
 	use_healthstone = true,   -- Healthstone
-	use_wisdom = false,       -- Flask of distilled wisdom
+	use_wisdom = true,       -- Flask of distilled wisdom
 	
 	health_percent = 20, -- default % HP
     mana_percent   = 20, -- default % Mana
@@ -315,17 +316,31 @@ function AutoHeal(macro_body,fn)
 		DEFAULT_CHAT_FRAME:AddMessage(">> Using Minor Healing Potion <<")
 		last_fired = now
 		
+	elseif AutoHealSettings.use_jade and mana_threshold and consumeReady(consumables.jade) and UnitAffectingCombat("player") then
+      debug_print("Trying Mana Jade")
+      UseContainerItem(consumables.jade.bag,consumables.jade.slot)
+		DEFAULT_CHAT_FRAME:AddMessage(">> Using Mana Jade <<")
+		oom = false
+		last_fired = now
+			
+    elseif AutoHealSettings.use_agate and mana_threshold and consumeReady(consumables.agate) and UnitAffectingCombat("player") then
+      debug_print("Trying Mana Agate")
+      UseContainerItem(consumables.agate.bag,consumables.agate.slot)
+		DEFAULT_CHAT_FRAME:AddMessage(">> Using Mana Agate <<")
+		oom = false
+		last_fired = now
+			
 	elseif AutoHealSettings.use_majormana and mana_threshold and consumeReady(consumables.majormana) and UnitAffectingCombat("player") then
       debug_print("Trying Major Mana Potion")
       UseContainerItem(consumables.majormana.bag,consumables.majormana.slot)
 		DEFAULT_CHAT_FRAME:AddMessage(">> Using Major Mana Potion <<")
 		oom = false
 		last_fired = now
-		
-	elseif AutoHealSettings.use_jade and mana_threshold and consumeReady(consumables.jade) and UnitAffectingCombat("player") then
-      debug_print("Trying Mana Jade")
-      UseContainerItem(consumables.jade.bag,consumables.jade.slot)
-		DEFAULT_CHAT_FRAME:AddMessage(">> Using Mana Jade <<")
+
+	elseif AutoHealSettings.use_greatermana and mana_threshold and consumeReady(consumables.greatermana) and UnitAffectingCombat("player") then
+      debug_print("Trying Greater Mana Potion")
+      UseContainerItem(consumables.greatermana.bag,consumables.greatermana.slot)
+		DEFAULT_CHAT_FRAME:AddMessage(">> Using Greater Mana Potion <<")
 		oom = false
 		last_fired = now
 		
@@ -333,13 +348,6 @@ function AutoHeal(macro_body,fn)
       debug_print("Trying Mana Potion")
       UseContainerItem(consumables.mana.bag,consumables.mana.slot)
 		DEFAULT_CHAT_FRAME:AddMessage(">> Using Mana Potion <<")
-		oom = false
-		last_fired = now
-		
-    elseif AutoHealSettings.use_agate and mana_threshold and consumeReady(consumables.agate) and UnitAffectingCombat("player") then
-      debug_print("Trying Mana Agate")
-      UseContainerItem(consumables.agate.bag,consumables.agate.slot)
-		DEFAULT_CHAT_FRAME:AddMessage(">> Using Mana Agate <<")
 		oom = false
 		last_fired = now
 		
@@ -486,14 +494,16 @@ local function OnEvent()
 	-- minor heal
 	consumables.minorheal = AMFindItem(consumables.minorheal, "Minor Healing Potion", arg1)
 	
-	-- major mana
-	consumables.majormana = AMFindItem(consumables.majormana, "Major Mana Potion", arg1)
-	-- mana agate
+	-- mana jade
 	consumables.jade = AMFindItem(consumables.jade, "Mana Jade", arg1) -- conjured mana jade
-	-- mana
-	consumables.mana = AMFindItem(consumables.mana, "Mana Potion", arg1)
 	-- mana agate
 	consumables.agate = AMFindItem(consumables.agate, "Mana Agate", arg1) -- conjured mana agate
+	-- major mana
+	consumables.majormana = AMFindItem(consumables.majormana, "Major Mana Potion", arg1)
+	-- greater mana
+	consumables.greatermana = AMFindItem(consumables.greatermana, "Greater Mana Potion", arg1)
+	-- mana
+	consumables.mana = AMFindItem(consumables.mana, "Mana Potion", arg1)
 	-- lesser mana
 	consumables.lessermana = AMFindItem(consumables.lessermana, "Lesser Mana Potion", arg1)
 	-- minor mana
@@ -548,6 +558,9 @@ elseif args[1] == "minorhealing" then
 elseif args[1] == "majormana" then
     AutoHealSettings.use_majormana = not AutoHealSettings.use_majormana
     amprint("Use Major Mana Potion: " .. showOnOff(AutoHealSettings.use_majormana))
+elseif args[1] == "greatermana" then
+    AutoHealSettings.use_greatermana = not AutoHealSettings.use_greatermana
+    amprint("Use Greater Mana Potion: " .. showOnOff(AutoHealSettings.use_greatermana))
 elseif args[1] == "mana" then
     AutoHealSettings.use_mana = not AutoHealSettings.use_mana
     amprint("Use Mana Potion: " .. showOnOff(AutoHealSettings.use_mana))
@@ -636,9 +649,10 @@ elseif args[1] == "mp" and args[2] then
 	amprint('- Use ' .. colorize("LesserMana", amcolor.green) .. ' Potion [' .. showOnOff(AutoHealSettings.use_lessermana) .. ']')
 	amprint('- Use Conjured Mana ' .. colorize("Agate", amcolor.green) .. ' [' .. showOnOff(AutoHealSettings.use_agate) .. ']')
 	amprint('- Use ' .. colorize("Mana", amcolor.green) .. ' Potion [' .. showOnOff(AutoHealSettings.use_mana) .. ']')
-	amprint('- Use Conjured Mana ' .. colorize("Jade", amcolor.green) .. ' [' .. showOnOff(AutoHealSettings.use_jade) .. ']') 
+	amprint('- Use Conjured Mana ' .. colorize("Jade", amcolor.green) .. ' [' .. showOnOff(AutoHealSettings.use_jade) .. ']')
+	amprint('- Use ' .. colorize("GreaterMana", amcolor.green) .. ' Potion [' .. showOnOff(AutoHealSettings.use_greatermana) .. ']')
 	amprint('- Use ' .. colorize("MajorMana",amcolor.green) .. ' Potion [' .. showOnOff(AutoHealSettings.use_majormana) .. ']')
-
+		
 -- Rejuvenation Potions
 	amprint('- Use ' .. colorize("MinorRejuv", amcolor.green) .. 'enation Potion [' .. showOnOff(AutoHealSettings.use_minorrejuv) .. ']')
 	amprint('- Use ' .. colorize("LesserRejuv", amcolor.green) .. 'enation Potion [' .. showOnOff(AutoHealSettings.use_lesserrejuv) .. ']')
