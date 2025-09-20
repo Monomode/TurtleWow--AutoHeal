@@ -27,7 +27,7 @@ local defaults =
 	use_jade = true,        -- conjured mana jade
 	use_agate = true,        -- conjured mana agate
 	use_majormana = true,   -- major mana potion
-	use_greatermana, true	-- greater mana potion
+	use_greatermana, true,	-- greater mana potion
 	use_mana = true,         -- mana potion
 	use_lessermana = true,  -- lesser mana potion
 	use_minormana = true,   -- minor mana potion
