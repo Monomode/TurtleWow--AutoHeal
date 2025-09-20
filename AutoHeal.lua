@@ -8,8 +8,8 @@
 -- Example: If your mana drops below MANA_THRESHOLD_PERCENT, a mana potion is used.
 -- Example: HEALTH THRESHOLD = 69   -- absolute health value (e.g., 1000 HP)
 -- Example: MANA THRESHOLD   = 420    -- absolute mana value (e.g., 520 mana)
--- Example: HEALTH PERCENT   = 0.15   -- % of max HP (0.25 = 25%)
--- Example: MANA PERCENT     = 0.15   -- % of max mana (0.30 = 30%)
+-- Example: HEALTH PERCENT   = 20   -- % of max HP (20 = 20%)
+-- Example: MANA PERCENT     = 20   -- % of max mana (20 = 20%)
 --
 
 -- User Options
