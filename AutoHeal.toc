@@ -1,5 +1,5 @@
 ## Interface: 11200
-## Title: |cff7fff7f TurtleWOW|r |cffffffffAuto|r |cffff0000Heal|r |cff00e5ffMana|r
+## Title: |cff7fff7f TurtleWOW|r |cffffffffAuto|r |cffff0000Heal|r |cffffffff&|r |cff0070DDMana|r
 ## Notes: Automatic Heal & Mana Consume Usage
 ## X-Category: Interface Enhancements
 ## Version: 3
