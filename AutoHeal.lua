@@ -384,7 +384,7 @@ function AutoHeal(macro_body,fn)
 		oom = false
 		last_fired = now	
 		
-    elseif AutoHealSettings.use_majorrejuv and (missing_health > (consumables.has_alchstone and 2340 or 1760)) and consumeReady(consumables.majorrejuv) and UnitAffectingCombat("player") then
+    elseif AutoHealSettings.use_majorrejuv and healing_threshold and mana_threshold and consumeReady(consumables.majorrejuv) and UnitAffectingCombat("player") then
       debug_print("Trying Major Rejuvenation")
 	  SpellStopCasting()
       UseContainerItem(consumables.majorrejuv.bag,consumables.majorrejuv.slot)
@@ -392,7 +392,7 @@ function AutoHeal(macro_body,fn)
 		oom = false
 		last_fired = now
 		
-    elseif AutoHealSettings.use_rejuv and (missing_health > (consumables.has_alchstone and 2340 or 1760)) and consumeReady(consumables.rejuv) and UnitAffectingCombat("player") then
+    elseif AutoHealSettings.use_rejuv and healing_threshold and mana_threshold and consumeReady(consumables.rejuv) and UnitAffectingCombat("player") then
       debug_print("Trying Rejuvenation")
 	  SpellStopCasting()
       UseContainerItem(consumables.rejuv.bag,consumables.rejuv.slot)
@@ -400,7 +400,7 @@ function AutoHeal(macro_body,fn)
 		oom = false
 		last_fired = now
 		
-    elseif AutoHealSettings.use_lesserrejuv and (missing_health > (consumables.has_alchstone and 2340 or 1760)) and consumeReady(consumables.lesserrejuv) and UnitAffectingCombat("player") then
+    elseif AutoHealSettings.use_lesserrejuv and healing_threshold and mana_threshold and consumeReady(consumables.lesserrejuv) and UnitAffectingCombat("player") then
       debug_print("Trying Lesser Rejuvenation")
 	  SpellStopCasting()
       UseContainerItem(consumables.lesserrejuv.bag,consumables.lesserrejuv.slot)
@@ -408,7 +408,7 @@ function AutoHeal(macro_body,fn)
 		oom = false
 		last_fired = now
 		
-    elseif AutoHealSettings.use_minorrejuv and (missing_health > (consumables.has_alchstone and 2340 or 1760)) and consumeReady(consumables.minorrejuv) and UnitAffectingCombat("player") then
+    elseif AutoHealSettings.use_minorrejuv and healing_threshold and mana_threshold and consumeReady(consumables.minorrejuv) and UnitAffectingCombat("player") then
       debug_print("Trying Minor Rejuvenation")
 	  SpellStopCasting()
       UseContainerItem(consumables.minorrejuv.bag,consumables.minorrejuv.slot)
@@ -514,7 +514,7 @@ local function OnEvent()
 	-- major heal
 	consumables.majorheal = AMFindItem(consumables.majorheal, "Major Healing Potion", arg1)
 	-- heal
-	consumables.heal = AMFindItem(consumables.heal, "Healing Potion", arg1)
+	consumables.heal = AMFindItem(consumables.heal, "929", arg1)
 	-- lesser heal
 	consumables.lesserheal = AMFindItem(consumables.lesserheal, "Lesser Healing Potion", arg1)
 	-- minor heal
