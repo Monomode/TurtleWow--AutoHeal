@@ -2,15 +2,10 @@
 -- License: LGPL v2.1
 
 -- ========================================================================
--- User-configurable thresholds (easy to edit)
+-- If your health drops below the HEALTH THRESHOLD, a healing potion is used.
+-- If your mana drops below the MANA THRESHOLD, a mana potion is used.
 -- ========================================================================
--- Example: If your health drops below HEALTH_THRESHOLD_PERCENT, a healing potion is used.
--- Example: If your mana drops below MANA_THRESHOLD_PERCENT, a mana potion is used.
--- Example: HEALTH THRESHOLD = 69   -- absolute health value (e.g., 1000 HP)
--- Example: MANA THRESHOLD   = 420    -- absolute mana value (e.g., 520 mana)
--- Example: HEALTH PERCENT   = 20   -- % of max HP (20 = 20%)
--- Example: MANA PERCENT     = 20   -- % of max mana (20 = 20%)
---
+
 
 -- User Options
 local defaults =
