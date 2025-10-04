@@ -1,1 +1,7 @@
-
+## Interface: 11200
+## Title: AutoHeal GUI
+## Notes: Minimap button & GUI for AutoHeal
+## Author: Monomoy
+## Version: 1.0
+## Dependencies: AutoHeal
+AutoHealGUI.lua
