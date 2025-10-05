@@ -35,6 +35,8 @@ local defaults =
 	use_tea = true, 		  -- Tea with sugar
 	use_healthstone = true,   -- Healthstone
 	use_wisdom = true,       -- Flask of distilled wisdom
+
+	use_linenbandage = true,	-- Linen Bandage
 	
 	health_percent = 20, -- default % HP
     mana_percent   = 20, -- default % Mana
@@ -322,6 +324,13 @@ function AutoHeal(macro_body,fn)
       UseContainerItem(consumables.minorheal.bag,consumables.minorheal.slot)
 		DEFAULT_CHAT_FRAME:AddMessage(">> Using Minor Healing Potion <<")
 		last_fired = now
+
+	elseif AutoHealSettings.use_linenbandage and healing_threshold and consumeReady(consumables.linenbandage) and UnitAffectingCombat("player") then
+      debug_print("Trying Linen Bandage")
+	  SpellStopCasting()
+      UseContainerItem(consumables.linenbandage.bag,consumables.linenbandage.slot)
+		DEFAULT_CHAT_FRAME:AddMessage(">> Using Linen Bandage <<")
+		last_fired = now
 		
 	elseif AutoHealSettings.use_jade and mana_threshold and consumeReady(consumables.jade) and UnitAffectingCombat("player") then
       debug_print("Trying Mana Jade")
@@ -514,6 +523,8 @@ local function OnEvent()
 	consumables.lesserheal = AMFindItem(consumables.lesserheal, "Lesser Healing Potion", arg1)
 	-- minor heal
 	consumables.minorheal = AMFindItem(consumables.minorheal, "Minor Healing Potion", arg1)
+	-- linen bandage
+	consumables.linenbandage = AMFindItem(consumables.linenbandage, "Linen Bandage", arg1)
 	
 	-- mana jade
 	consumables.jade = AMFindItem(consumables.jade, "Mana Jade", arg1) -- conjured mana jade
@@ -576,6 +587,11 @@ elseif args[1] == "lesserheal" then
 elseif args[1] == "minorhealing" then
     AutoHealSettings.use_minorheal = not AutoHealSettings.use_minorheal
     amprint("Use Minor Healing Potion: " .. showOnOff(AutoHealSettings.use_minorheal))
+
+elseif args[1] == "linenbandage" then
+    AutoHealSettings.use_linenbandage = not AutoHealSettings.use_linenbandage
+    amprint("Use Linen Bandage: " .. showOnOff(AutoHealSettings.use_linenbandage))
+		
 elseif args[1] == "majormana" then
     AutoHealSettings.use_majormana = not AutoHealSettings.use_majormana
     amprint("Use Major Mana Potion: " .. showOnOff(AutoHealSettings.use_majormana))
@@ -658,6 +674,9 @@ elseif args[1] == "mp" and args[2] then
     amprint('- Addon '..colorize("enable",amcolor.green)..'d [' .. showOnOff(AutoHealSettings.enabled) .. ']')
     amprint('- Active in ' .. colorize("combat",amcolor.green)..' only [' .. showOnOff(AutoHealSettings.combat_only) .. ']')
     amprint('- Active at minimum group ' .. colorize("size",amcolor.green) .. ' [' .. AutoHealSettings.min_group_size .. ']')
+
+-- Bandages
+	amprint('- Use ' .. colorize("LinenBandage", amcolor.green) .. ' [' .. showOnOff(AutoHealSettings.use_linenbandage) .. ']')
 
 -- Healing Potions
 	amprint('- Use ' .. colorize("MinorHeal", amcolor.green) .. 'ing Potion [' .. showOnOff(AutoHealSettings.use_minorheal) .. ']')
