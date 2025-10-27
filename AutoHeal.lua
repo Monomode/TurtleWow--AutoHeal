@@ -14,7 +14,8 @@ local defaults =
 	combat_only = false,
 	min_group_size = 1,
   
-	use_majorheal = true,   -- major healing potion 
+	use_majorheal = true,   -- major healing potion
+	use_greaterheal = true, -- greater healing potion
 	use_heal = false,         -- healing potion 
 	use_lesserheal = true,  -- lesser healing potion 
 	use_minorheal = true,   -- minor healing potion 
@@ -35,8 +36,6 @@ local defaults =
 	use_tea = true, 		  -- Tea with sugar
 	use_healthstone = true,   -- Healthstone
 	use_wisdom = true,       -- Flask of distilled wisdom
-
-	use_linenbandage = true,	-- Linen Bandage
 	
 	health_percent = 20, -- default % HP
     mana_percent   = 20, -- default % Mana
@@ -303,6 +302,13 @@ function AutoHeal(macro_body,fn)
       UseContainerItem(consumables.majorheal.bag,consumables.majorheal.slot)
 		DEFAULT_CHAT_FRAME:AddMessage(">> Using Major Healing Potion <<")
 		last_fired = now
+
+	elseif AutoHealSettings.use_greaterheal and healing_threshold and consumeReady(consumables.greaterheal) and UnitAffectingCombat("player") then
+      debug_print("Trying Greater Healing Potion")
+	  SpellStopCasting()
+      UseContainerItem(consumables.greaterheal.bag,consumables.greaterheal.slot)
+		DEFAULT_CHAT_FRAME:AddMessage(">> Using Greater Healing Potion <<")
+		last_fired = now
 		
     elseif AutoHealSettings.use_heal and healing_threshold and consumeReady(consumables.heal) and UnitAffectingCombat("player") then
       debug_print("Trying Healing Potion")
@@ -323,13 +329,6 @@ function AutoHeal(macro_body,fn)
 	  SpellStopCasting()
       UseContainerItem(consumables.minorheal.bag,consumables.minorheal.slot)
 		DEFAULT_CHAT_FRAME:AddMessage(">> Using Minor Healing Potion <<")
-		last_fired = now
-
-	elseif AutoHealSettings.use_linenbandage and healing_threshold and consumeReady(consumables.linenbandage) and UnitAffectingCombat("player") then
-      debug_print("Trying Linen Bandage")
-	  SpellStopCasting()
-      UseContainerItem(consumables.linenbandage.bag,consumables.linenbandage.slot)
-		DEFAULT_CHAT_FRAME:AddMessage(">> Using Linen Bandage <<")
 		last_fired = now
 		
 	elseif AutoHealSettings.use_jade and mana_threshold and consumeReady(consumables.jade) and UnitAffectingCombat("player") then
@@ -517,14 +516,14 @@ local function OnEvent()
     end
 	-- major heal
 	consumables.majorheal = AMFindItem(consumables.majorheal, "Major Healing Potion", arg1)
+	-- greater heal
+	consumables.greaterheal = AMFindItem(consumables.greaterheal, "7181", arg1)
 	-- heal
 	consumables.heal = AMFindItem(consumables.heal, "929", arg1)
 	-- lesser heal
 	consumables.lesserheal = AMFindItem(consumables.lesserheal, "Lesser Healing Potion", arg1)
 	-- minor heal
 	consumables.minorheal = AMFindItem(consumables.minorheal, "Minor Healing Potion", arg1)
-	-- linen bandage
-	consumables.linenbandage = AMFindItem(consumables.linenbandage, "Linen Bandage", arg1)
 	
 	-- mana jade
 	consumables.jade = AMFindItem(consumables.jade, "Mana Jade", arg1) -- conjured mana jade
@@ -578,6 +577,9 @@ local function handleCommands(msg,editbox)
 if args[1] == "majorheal" then
     AutoHealSettings.use_majorheal = not AutoHealSettings.use_majorheal
     amprint("Use Healing Potion: " .. showOnOff(AutoHealSettings.use_majorheal))
+elseif args[1] == "greaterheal" then
+    AutoHealSettings.use_greaterheal = not AutoHealSettings.use_greaterheal
+    amprint("Use Greater Healing Potion: " .. showOnOff(AutoHealSettings.use_greaterheal))
 elseif args[1] == "heal" then
     AutoHealSettings.use_heal = not AutoHealSettings.use_heal
     amprint("Use Healing Potion: " .. showOnOff(AutoHealSettings.use_heal))
@@ -682,6 +684,7 @@ elseif args[1] == "mp" and args[2] then
 	amprint('- Use ' .. colorize("MinorHeal", amcolor.green) .. 'ing Potion [' .. showOnOff(AutoHealSettings.use_minorheal) .. ']')
 	amprint('- Use ' .. colorize("LesserHeal", amcolor.green) .. 'ing Potion [' .. showOnOff(AutoHealSettings.use_lesserheal) .. ']')
 	amprint('- Use ' .. colorize("Heal", amcolor.green) .. 'ing Potion [' .. showOnOff(AutoHealSettings.use_heal) .. ']')
+	amprint('- Use ' .. colorize("GreaterHeal",amcolor.green) .. 'ing Potion [' .. showOnOff(AutoHealSettings.use_greaterheal) .. ']')
 	amprint('- Use ' .. colorize("MajorHeal",amcolor.green) .. 'ing Potion [' .. showOnOff(AutoHealSettings.use_majorheal) .. ']')
 
 -- Mana Potions
