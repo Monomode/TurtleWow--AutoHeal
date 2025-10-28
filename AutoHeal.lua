@@ -298,42 +298,36 @@ function AutoHeal(macro_body,fn)
 	
     if AutoHealSettings.use_majorheal and healing_threshold and consumeReady(consumables.majorheal) and UnitAffectingCombat("player") then
       debug_print("Trying Major Healing Potion")
-	  SpellStopCasting()
       UseContainerItem(consumables.majorheal.bag,consumables.majorheal.slot)
 		DEFAULT_CHAT_FRAME:AddMessage(">> Using Major Healing Potion <<")
 		last_fired = now
 
 	elseif AutoHealSettings.use_greaterheal and healing_threshold and consumeReady(consumables.greaterheal) and UnitAffectingCombat("player") then
       debug_print("Trying Greater Healing Potion")
-	  SpellStopCasting()
       UseContainerItem(consumables.greaterheal.bag,consumables.greaterheal.slot)
 		DEFAULT_CHAT_FRAME:AddMessage(">> Using Greater Healing Potion <<")
 		last_fired = now
 		
     elseif AutoHealSettings.use_heal and healing_threshold and consumeReady(consumables.heal) and UnitAffectingCombat("player") then
       debug_print("Trying Healing Potion")
-	  SpellStopCasting()
       UseContainerItem(consumables.heal.bag,consumables.heal.slot)
 		DEFAULT_CHAT_FRAME:AddMessage(">> Using Healing Potion <<")
 		last_fired = now
 		
     elseif AutoHealSettings.use_lesserheal and healing_threshold and consumeReady(consumables.lesserheal) and UnitAffectingCombat("player") then
       debug_print("Trying Lesser Healing Potion")
-	  SpellStopCasting()
       UseContainerItem(consumables.lesserheal.bag,consumables.lesserheal.slot)
 		DEFAULT_CHAT_FRAME:AddMessage(">> Using Lesser Healing Potion <<")
 		last_fired = now
 		
     elseif AutoHealSettings.use_minorheal and healing_threshold and consumeReady(consumables.minorheal) and UnitAffectingCombat("player") then
       debug_print("Trying Minor Healing Potion")
-	  SpellStopCasting()
       UseContainerItem(consumables.minorheal.bag,consumables.minorheal.slot)
 		DEFAULT_CHAT_FRAME:AddMessage(">> Using Minor Healing Potion <<")
 		last_fired = now
 		
 	elseif AutoHealSettings.use_jade and mana_threshold and consumeReady(consumables.jade) and UnitAffectingCombat("player") then
       debug_print("Trying Mana Jade")
-	  SpellStopCasting()
       UseContainerItem(consumables.jade.bag,consumables.jade.slot)
 		DEFAULT_CHAT_FRAME:AddMessage(">> Using Mana Jade <<")
 		oom = false
@@ -341,7 +335,6 @@ function AutoHeal(macro_body,fn)
 			
     elseif AutoHealSettings.use_agate and mana_threshold and consumeReady(consumables.agate) and UnitAffectingCombat("player") then
       debug_print("Trying Mana Agate")
-	  SpellStopCasting()
       UseContainerItem(consumables.agate.bag,consumables.agate.slot)
 		DEFAULT_CHAT_FRAME:AddMessage(">> Using Mana Agate <<")
 		oom = false
@@ -349,7 +342,6 @@ function AutoHeal(macro_body,fn)
 			
 	elseif AutoHealSettings.use_majormana and mana_threshold and consumeReady(consumables.majormana) and UnitAffectingCombat("player") then
       debug_print("Trying Major Mana Potion")
-	  SpellStopCasting()
       UseContainerItem(consumables.majormana.bag,consumables.majormana.slot)
 		DEFAULT_CHAT_FRAME:AddMessage(">> Using Major Mana Potion <<")
 		oom = false
@@ -357,7 +349,6 @@ function AutoHeal(macro_body,fn)
 
 	elseif AutoHealSettings.use_greatermana and mana_threshold and consumeReady(consumables.greatermana) and UnitAffectingCombat("player") then
       debug_print("Trying Greater Mana Potion")
-	  SpellStopCasting()
       UseContainerItem(consumables.greatermana.bag,consumables.greatermana.slot)
 		DEFAULT_CHAT_FRAME:AddMessage(">> Using Greater Mana Potion <<")
 		oom = false
@@ -365,7 +356,6 @@ function AutoHeal(macro_body,fn)
 		
     elseif AutoHealSettings.use_mana and mana_threshold and consumeReady(consumables.mana) and UnitAffectingCombat("player") then
       debug_print("Trying Mana Potion")
-	  SpellStopCasting()
       UseContainerItem(consumables.mana.bag,consumables.mana.slot)
 		DEFAULT_CHAT_FRAME:AddMessage(">> Using Mana Potion <<")
 		oom = false
@@ -373,7 +363,6 @@ function AutoHeal(macro_body,fn)
 		
     elseif AutoHealSettings.use_lessermana and mana_threshold and consumeReady(consumables.lessermana) and UnitAffectingCombat("player") then
       debug_print("Trying Lesser Mana Potion")
-	  SpellStopCasting()
       UseContainerItem(consumables.lessermana.bag,consumables.lessermana.slot)
 		DEFAULT_CHAT_FRAME:AddMessage(">> Using Lesser Mana Potion <<")
 		oom = false
@@ -381,7 +370,6 @@ function AutoHeal(macro_body,fn)
 		
     elseif AutoHealSettings.use_minormana and mana_threshold and consumeReady(consumables.minormana) and UnitAffectingCombat("player") then
       debug_print("Trying Minor Mana Potion")
-	  SpellStopCasting()
       UseContainerItem(consumables.minormana.bag,consumables.minormana.slot)
 		DEFAULT_CHAT_FRAME:AddMessage(">> Using Minor Mana Potion <<")
 		oom = false
@@ -389,7 +377,6 @@ function AutoHeal(macro_body,fn)
 		
     elseif AutoHealSettings.use_majorrejuv and healing_threshold and mana_threshold and consumeReady(consumables.majorrejuv) and UnitAffectingCombat("player") then
       debug_print("Trying Major Rejuvenation")
-	  SpellStopCasting()
       UseContainerItem(consumables.majorrejuv.bag,consumables.majorrejuv.slot)
 		DEFAULT_CHAT_FRAME:AddMessage(">> Using Major Rejuvenation Potion <<")
 		oom = false
@@ -397,7 +384,6 @@ function AutoHeal(macro_body,fn)
 		
     elseif AutoHealSettings.use_rejuv and healing_threshold and mana_threshold and consumeReady(consumables.rejuv) and UnitAffectingCombat("player") then
       debug_print("Trying Rejuvenation")
-	  SpellStopCasting()
       UseContainerItem(consumables.rejuv.bag,consumables.rejuv.slot)
 		DEFAULT_CHAT_FRAME:AddMessage(">> Using Rejuvenation Potion <<")
 		oom = false
@@ -405,7 +391,6 @@ function AutoHeal(macro_body,fn)
 		
     elseif AutoHealSettings.use_lesserrejuv and healing_threshold and mana_threshold and consumeReady(consumables.lesserrejuv) and UnitAffectingCombat("player") then
       debug_print("Trying Lesser Rejuvenation")
-	  SpellStopCasting()
       UseContainerItem(consumables.lesserrejuv.bag,consumables.lesserrejuv.slot)
 		DEFAULT_CHAT_FRAME:AddMessage(">> Using Lesser Rejuvenation Potion <<")
 		oom = false
@@ -413,7 +398,6 @@ function AutoHeal(macro_body,fn)
 		
     elseif AutoHealSettings.use_minorrejuv and healing_threshold and mana_threshold and consumeReady(consumables.minorrejuv) and UnitAffectingCombat("player") then
       debug_print("Trying Minor Rejuvenation")
-	  SpellStopCasting()
       UseContainerItem(consumables.minorrejuv.bag,consumables.minorrejuv.slot)
 		DEFAULT_CHAT_FRAME:AddMessage(">> Using Minor Rejuvenation Potion <<")
 		oom = false
@@ -421,7 +405,6 @@ function AutoHeal(macro_body,fn)
 		
     elseif AutoHealSettings.use_tea and mana_threshold and consumeReady(consumables.tea) and UnitAffectingCombat("player") then
       debug_print("Trying Tea with sugar")
-	  SpellStopCasting()
       UseContainerItem(consumables.tea.bag,consumables.tea.slot)
 		DEFAULT_CHAT_FRAME:AddMessage(">> Using Tea with sugar <<")
 		oom = false
@@ -429,14 +412,12 @@ function AutoHeal(macro_body,fn)
 		
     elseif AutoHealSettings.use_healthstone and healthstone_threshold and consumeReady(consumables.healthstone) and UnitAffectingCombat("player") then
       debug_print("Trying Healthstone")
-	  SpellStopCasting()
       UseContainerItem(consumables.healthstone.bag,consumables.healthstone.slot)
 		DEFAULT_CHAT_FRAME:AddMessage(">> Using Healthstone <<")
 		last_fired = now
 		
     elseif AutoHealSettings.use_wisdom and mana_threshold and consumeReady(consumables.flask) and UnitAffectingCombat("player") then
       debug_print("Trying Flask")
-	  SpellStopCasting()
       UseContainerItem(consumables.flask.bag,consumables.flask.slot)
 		DEFAULT_CHAT_FRAME:AddMessage(">> Using Flask of Distilled Wisdom <<")
 		oom = false
@@ -515,15 +496,15 @@ local function OnEvent()
       consumables.tea = AMFindItem(consumables.tea, "Tea with sugar", arg1)
     end
 	-- major heal
-	consumables.majorheal = AMFindItem(consumables.majorheal, "Major Healing Potion", arg1)
+	consumables.majorheal = AMFindItem(consumables.majorheal, "13446", arg1)
 	-- greater heal
 	consumables.greaterheal = AMFindItem(consumables.greaterheal, "7181", arg1)
 	-- heal
 	consumables.heal = AMFindItem(consumables.heal, "929", arg1)
 	-- lesser heal
-	consumables.lesserheal = AMFindItem(consumables.lesserheal, "Lesser Healing Potion", arg1)
+	consumables.lesserheal = AMFindItem(consumables.lesserheal, "2337", arg1)
 	-- minor heal
-	consumables.minorheal = AMFindItem(consumables.minorheal, "Minor Healing Potion", arg1)
+	consumables.minorheal = AMFindItem(consumables.minorheal, "2330", arg1)
 	
 	-- mana jade
 	consumables.jade = AMFindItem(consumables.jade, "Mana Jade", arg1) -- conjured mana jade
@@ -576,7 +557,7 @@ local function handleCommands(msg,editbox)
   for word in string.gfind(msg,'%S+') do table.insert(args,word) end
 if args[1] == "majorheal" then
     AutoHealSettings.use_majorheal = not AutoHealSettings.use_majorheal
-    amprint("Use Healing Potion: " .. showOnOff(AutoHealSettings.use_majorheal))
+    amprint("Use Major Healing Potion: " .. showOnOff(AutoHealSettings.use_majorheal))
 elseif args[1] == "greaterheal" then
     AutoHealSettings.use_greaterheal = not AutoHealSettings.use_greaterheal
     amprint("Use Greater Healing Potion: " .. showOnOff(AutoHealSettings.use_greaterheal))
@@ -589,10 +570,6 @@ elseif args[1] == "lesserheal" then
 elseif args[1] == "minorhealing" then
     AutoHealSettings.use_minorheal = not AutoHealSettings.use_minorheal
     amprint("Use Minor Healing Potion: " .. showOnOff(AutoHealSettings.use_minorheal))
-
-elseif args[1] == "linenbandage" then
-    AutoHealSettings.use_linenbandage = not AutoHealSettings.use_linenbandage
-    amprint("Use Linen Bandage: " .. showOnOff(AutoHealSettings.use_linenbandage))
 		
 elseif args[1] == "majormana" then
     AutoHealSettings.use_majormana = not AutoHealSettings.use_majormana
