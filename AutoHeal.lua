@@ -498,7 +498,7 @@ local function OnEvent()
 	-- major heal
 	consumables.majorheal = AMFindItem(consumables.majorheal, "13446", arg1)
 	-- greater heal
-	consumables.greaterheal = AMFindItem(consumables.greaterheal, "7181", arg1)
+	consumables.greaterheal = AMFindItem(consumables.greaterheal, "1710", arg1)
 	-- heal
 	consumables.heal = AMFindItem(consumables.heal, "929", arg1)
 	-- lesser heal
