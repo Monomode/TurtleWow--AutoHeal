@@ -9,17 +9,19 @@
 
 -- User Options
 local defaults =
-{
+{	-- Config
 	enabled = true,
 	combat_only = false,
 	min_group_size = 1,
-  
+	
+	-- Health
 	use_majorheal = true,   -- major healing potion
 	use_greaterheal = true, -- greater healing potion
 	use_heal = false,         -- healing potion 
 	use_lesserheal = true,  -- lesser healing potion 
 	use_minorheal = true,   -- minor healing potion 
 	
+	-- Mana
 	use_jade = true,        -- conjured mana jade
 	use_agate = true,        -- conjured mana agate
 	use_majormana = true,   -- major mana potion
@@ -27,12 +29,13 @@ local defaults =
 	use_mana = true,         -- mana potion
 	use_lessermana = true,  -- lesser mana potion
 	use_minormana = true,   -- minor mana potion
-
+	
+	-- Rejuvenation
 	use_majorrejuv = true,  -- major rejuvenation potion 
 	use_rejuv = true,        -- rejuvenation potion 
 	use_lesserrejuv = true, -- lesser rejuvenation potion 
 	use_minorrejuv = true,  -- minor rejuvenation potion 
-
+	--
 	use_tea = true, 		  -- Tea with sugar
 	use_healthstone = true,   -- Healthstone
 	use_wisdom = true,       -- Flask of distilled wisdom
