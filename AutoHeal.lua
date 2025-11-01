@@ -505,9 +505,9 @@ local function OnEvent()
 	-- heal
 	consumables.heal = AMFindItem(consumables.heal, "929", arg1)
 	-- lesser heal
-	consumables.lesserheal = AMFindItem(consumables.lesserheal, "2337", arg1)
+	consumables.lesserheal = AMFindItem(consumables.lesserheal, "Lesser Healing", arg1) 
 	-- minor heal
-	consumables.minorheal = AMFindItem(consumables.minorheal, "2330", arg1)
+	consumables.minorheal = AMFindItem(consumables.minorheal, "Minor Healing", arg1) 
 	
 	-- mana jade
 	consumables.jade = AMFindItem(consumables.jade, "Mana Jade", arg1) -- conjured mana jade
